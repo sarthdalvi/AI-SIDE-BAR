@@ -1,33 +1,92 @@
-# 🤖 AI Side Bar (Local & Private)
+# AI-SIDE-BAR 🔥
 
-**AI Side Bar** is a powerful Chrome extension that adds a smart sidebar to your browser. It uses **Local AI (Ollama)** to run entirely on your computer—no API keys, no monthly fees, and 100% private.
-
-![Extension Screenshot](icons/icon128.png)
-
-## ✨ Features
-
-* **🧠 Local AI Chat:** Chat with **Llama 3.2 (3B)** directly in your sidebar.
-* **📄 Summarize Webpages:** One-click summary of any long article or documentation.
-* **📝 Explain Selection:** Highlight text on any website $\rightarrow$ Right-click $\rightarrow$ AI explains it instantly.
-* **🔖 Smart Bookmarks:** A clean, modern bookmarks manager that filters out clutter.
-* **✅ Productivity Tools:** Built-in To-Do list and Quick Notes that auto-save.
-* **🌙 Dark Mode:** Easy on the eyes for late-night study sessions.
+A lightweight Chrome extension that adds an AI-powered sidebar for quick answers, meanings, explanations, and simple tasks — powered by small local/remote LLMs.
 
 ---
 
-## 🛠️ Prerequisites
+## 📌 Features
 
-Because this extension runs **locally** (for free), you need to install the AI brain on your computer first.
-
-1.  **Download Ollama:** [https://ollama.com](https://ollama.com)
-2.  **Install it** (Windows, Mac, or Linux).
+* 🧠 Quick AI responses in your browser
+* 🪟 Floating sidebar UI
+* ⚙️ Options page for configuration
+* 🧩 New Tab integration
+* ⚡ Lightweight (no big models needed)
+* 🖥 Works with local models (Ollama, LM Studio, etc.)
+* 🛠 Includes `StartAI.bat` for easy startup
 
 ---
 
-## 🚀 Installation Guide
+## 📂 Project Structure
 
-### Step 1: Download the AI Brain
-Open your terminal (Command Prompt or PowerShell) and run this command to download the model (approx 2.0 GB):
+```
+AI-SIDE-BAR/
+├── icons/
+├── manifest.json
+├── popup.html
+├── popup.js
+├── options.html
+├── options.js
+├── newtab.html
+├── newtab.js
+├── README.md
+└── StartAI.bat
+```
 
-```bash
-ollama run llama3.2
+---
+
+## 🚀 How to Install (Chrome Extension)
+
+### 1️⃣ Download the extension
+
+Click the green **Code** button in this repo → **Download ZIP**.
+Unzip it anywhere on your PC.
+
+### 2️⃣ Enable Developer Mode
+
+Open Chrome:
+
+```
+chrome://extensions/
+```
+
+Turn on **Developer mode** (top-right corner).
+
+### 3️⃣ Load Unpacked
+
+Click **Load Unpacked** → Select the folder:
+
+```
+AI-SIDE-BAR/
+```
+
+Your extension will instantly load!
+
+---
+
+## ▶️ Running the AI Backend (Optional)
+
+If your extension uses a backend server:
+
+1. Double-click **StartAI.bat**
+2. It will start the local AI service required for the extension
+3. Keep the window open while using the extension
+
+---
+
+## 🤝 Share With Friends
+
+Your friends can also use the extension by:
+
+1. Visiting this repo
+2. Downloading ZIP
+3. Loading it using the steps above
+
+---
+
+## 📜 License
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
+
+### ⭐ If you like this project, support it with a star!
