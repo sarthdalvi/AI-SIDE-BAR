@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <style>
+    body{font-family:Inter,Arial;margin:40px;background:#f5f7fb;color:#333;}
+    h1{color:#111;}
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+    
+    /* Calendar CSS */
+    #calendar { font-family: monospace; line-height: 1.6; }
+    
+    a { text-decoration: none; color: #2563eb; display: block; margin-bottom: 6px; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Hello, User</h1>
+  <div class="grid">
+    <div class="card">
+      <h3>Search</h3>
+      <input id="q" placeholder="Search Google..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;" onkeydown="if(event.key==='Enter') window.location='https://google.com/search?q='+this.value">
+    </div>
+
+    <div class="card">
+      <h3>Top Bookmarks</h3>
+      <div id="bm"></div>
+    </div>
+
+    <div class="card">
+      <h3>Calendar</h3>
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+  <script src="newtab.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>AI Side Bar Options</title>
+  <style>
+    body{font-family:Inter,Arial;margin:24px;max-width:400px;}
+    label{display:block;margin-top:8px;font-weight:bold;}
+    input{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;}
+    button{margin-top:12px;padding:10px 16px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;}
+    .note{font-size:12px;color:#666;margin-top:20px;line-height:1.4;}
+  </style>
+</head>
+<body>
+  <h2>Extension Settings</h2>
+  <label>OpenAI API Key</label>
+  <input id="apiKey" type="password" placeholder="sk-..." />
+  <button id="save">Save Key</button>
+  <div id="status" style="margin-top:12px;color:green;font-weight:bold;"></div>
+  
+  <div class="note">
+    <strong>Security Note:</strong> Your key is stored in Chrome's local sync storage. It is not shared with anyone else.
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
