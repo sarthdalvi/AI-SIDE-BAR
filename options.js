@@ -17,3 +17,18 @@ saveBtn.addEventListener('click', () => {
     setTimeout(() => status.textContent = '', 2000);
   });
 });
+
+
+// ADDED FIX: Request microphone permission on page load
+navigator.mediaDevices.getUserMedia({ audio: true })
+  .then(function(stream) {
+    status.textContent = 'Microphone permission granted.';
+    stream.getTracks().forEach(track => track.stop()); // Immediately stop tracks to save resources
+  })
+  .catch(function(err) {
+    if (err.name === 'NotAllowedError') {
+      status.textContent = 'Microphone access denied. Voice commands will not work.';
+    } else {
+      status.textContent = 'Microphone error: ' + err.name;
+    }
+  });

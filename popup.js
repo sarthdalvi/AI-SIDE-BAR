@@ -1,58 +1,29 @@
+const responseDiv = document.getElementById("response");
+const promptInput = document.getElementById("prompt");
+const sendBtn = document.getElementById("send");
+const micBtn = document.getElementById("micBtn");
+const speakToggle = document.getElementById("speakToggle");
+const clearBtn = document.getElementById("clear");
+const openOptions = document.getElementById("open-options");
 const bookmarksList = document.getElementById('bookmarksList');
-const responseDiv = document.getElementById('response');
-const promptInput = document.getElementById('prompt');
-const sendBtn = document.getElementById('send');
-const explainBtn = document.getElementById('explain-selection');
-const summarizeBtn = document.getElementById('summarize-page');
-const clearBtn = document.getElementById('clear');
-const notes = document.getElementById('notes');
-const openOptions = document.getElementById('open-options');
 
-// --- 1. Bookmarks Logic ---
-function renderBookmarks(nodes, container) {
-  nodes.forEach(node => {
-    let title = node.title;
-    if (title === 'Bookmarks bar') return; 
-    if (title === 'Other bookmarks') title = 'Bookmarks'; 
+// Notes & Todo
+const notesList = document.getElementById('notes-list');
+const noteInput = document.getElementById('note-input');
+const addNoteBtn = document.getElementById('add-note');
+const todoList = document.getElementById('todo-list');
+const todoInput = document.getElementById('todo-input');
+const addTodo = document.getElementById('add-todo');
 
-    if (node.url) {
-      const el = document.createElement('a');
-      el.className = 'bookmark-item';
-      el.textContent = title || 'Link';
-      el.href = node.url;
-      el.target = "_blank";
-      container.appendChild(el);
-    } else if (node.children) {
-      const folderDiv = document.createElement('div');
-      if (title) {
-        const t = document.createElement('div');
-        t.className = 'folder-title';
-        t.textContent = '📂 ' + title;
-        folderDiv.appendChild(t);
-      }
-      const childBox = document.createElement('div');
-      childBox.style.paddingLeft = '8px';
-      folderDiv.appendChild(childBox);
-      renderBookmarks(node.children, childBox);
-      container.appendChild(folderDiv);
-    }
-  });
-}
+// CONFIG
+let speakEnabled = true;
+let listening = false;
+const OLLAMA_MODEL = "llama3.2"; 
 
-chrome.bookmarks.getTree((tree) => {
-  bookmarksList.innerHTML = '';
-  if (tree[0] && tree[0].children) {
-    renderBookmarks(tree[0].children, bookmarksList);
-  }
-});
-
-// --- Navigation ---
-openOptions.addEventListener('click', () => chrome.runtime.openOptionsPage());
-
-// --- 2. Chat Helper ---
+// --- HELPER FUNCTIONS ---
 function appendMessage(role, text) {
-  const div = document.createElement('div');
-  div.className = role === 'user' ? 'msg-user' : 'msg-ai';
+  const div = document.createElement("div");
+  div.className = role === "user" ? "msg-user" : "msg-ai";
   if (role === 'ai' && text.includes('```')) {
      text = text.replace(/```([\s\S]*?)```/g, '<pre style="background:#222;color:#eee;padding:5px;border-radius:4px;overflow:auto;"><code>$1</code></pre>');
      div.innerHTML = text;
@@ -61,133 +32,171 @@ function appendMessage(role, text) {
   }
   responseDiv.appendChild(div);
   responseDiv.scrollTop = responseDiv.scrollHeight;
-  chrome.storage.local.set({ chat_history: responseDiv.innerHTML });
 }
 
-chrome.storage.local.get(['chat_history'], (res) => {
-  if (res.chat_history) responseDiv.innerHTML = res.chat_history;
+// Fixed Speech Function
+function speakText(text) {
+  if (!speakEnabled) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.0; 
+  window.speechSynthesis.speak(utter);
+}
+
+// Toggle Button
+speakToggle.addEventListener("click", () => {
+  speakEnabled = !speakEnabled;
+  speakToggle.style.opacity = speakEnabled ? "1" : "0.4";
+  speakToggle.textContent = speakEnabled ? "🔊" : "🔇";
+  if (!speakEnabled) window.speechSynthesis.cancel();
 });
 
-// --- 3. LOCAL AI FUNCTION (Ollama) ---
-async function callOpenAI(userPrompt) {
-  if (!userPrompt) return;
-
-  // Handle Summary Prompt display
-  if(userPrompt.startsWith("Summarize this webpage content")) {
-    appendMessage('user', "📄 Summarize this page...");
-  } else {
-    appendMessage('user', userPrompt);
-  }
+// --- CORE AI FUNCTION ---
+async function callOllama(prompt) {
+  let displayPrompt = prompt;
+  if (prompt.length > 60) displayPrompt = "📄 [Sending Selection...]";
   
-  promptInput.value = '';
-
-  // Show "Thinking" Loader
-  const loadDiv = document.createElement('div');
-  loadDiv.className = 'msg-ai';
-  loadDiv.textContent = 'Thinking (Locally)...';
-  loadDiv.id = 'loader';
-  responseDiv.appendChild(loadDiv);
-  responseDiv.scrollTop = responseDiv.scrollHeight;
+  appendMessage("user", displayPrompt);
+  promptInput.value = "";
+  
+  const loading = document.createElement("div");
+  loading.className = "msg-ai";
+  loading.textContent = "Thinking...";
+  loading.id = "loader";
+  responseDiv.appendChild(loading);
 
   try {
-    // CONNECT TO LOCAL OLLAMA
-    const r = await fetch('http://localhost:11434/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: "llama3.2", // <--- The smarter 3B Model
-        messages: [{ role: "user", content: userPrompt }],
-        stream: false
-      })
+    const r = await fetch("http://localhost:11434/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: OLLAMA_MODEL, messages: [{ role: "user", content: prompt }], stream: false })
     });
-
-    if (!r.ok) throw new Error("Connection Failed. Is Ollama running?");
-
-    const data = await r.json();
-    const txt = data.message.content;
     
-    if(document.getElementById('loader')) document.getElementById('loader').remove();
-    appendMessage('ai', txt);
-
-  } catch (err) {
-    if(document.getElementById('loader')) document.getElementById('loader').remove();
-    appendMessage('ai', '⚠️ Error: Make sure you ran "ollama run llama3.2" and the server is running correctly.');
+    if (!r.ok) throw new Error("Ollama Error");
+    const data = await r.json();
+    const text = data?.message?.content || "No response";
+    
+    document.getElementById("loader")?.remove();
+    appendMessage("ai", text);
+    speakText(text);
+  } catch (e) {
+    document.getElementById("loader")?.remove();
+    appendMessage("ai", "⚠️ Connection failed. Run `StartAI.bat`!");
   }
 }
 
-sendBtn.addEventListener('click', () => callOpenAI(promptInput.value.trim()));
-promptInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); callOpenAI(promptInput.value.trim()); }
+sendBtn.addEventListener("click", () => {
+  const v = promptInput.value.trim();
+  if(v) callOllama(v);
+});
+promptInput.addEventListener("keydown", (e) => {
+  if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
+});
+clearBtn.addEventListener("click", () => {
+  responseDiv.innerHTML = '';
+  window.speechSynthesis.cancel();
+});
+openOptions.addEventListener("click", () => chrome.runtime.openOptionsPage());
+
+// Microphone
+let recognition;
+if ("webkitSpeechRecognition" in window) {
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = false;
+  recognition.lang = "en-US";
+  recognition.onstart = () => { listening = true; micBtn.style.opacity = "0.5"; };
+  recognition.onend = () => { listening = false; micBtn.style.opacity = "1"; };
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    promptInput.value = text;
+    sendBtn.click();
+  };
+}
+micBtn.addEventListener("click", () => {
+  if (listening) recognition.stop();
+  else recognition.start();
 });
 
-// Explain Selection
-explainBtn.addEventListener('click', async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: () => window.getSelection().toString()
-  }, (results) => {
-    if (results && results[0] && results[0].result) {
-      callOpenAI("Define this simply:\n" + results[0].result);
-    } else {
-      appendMessage('ai', 'Highlight text first!');
-    }
-  });
-});
-
-// Summarize Page
-summarizeBtn.addEventListener('click', async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: () => document.body.innerText
-  }, (results) => {
-    if (results && results[0] && results[0].result) {
-      const pageText = results[0].result.substring(0, 6000);
-      callOpenAI("Summarize this in 3 short bullet points:\n\n" + pageText);
-    } else {
-      appendMessage('ai', '⚠️ Could not read page text.');
-    }
-  });
-});
-
-clearBtn.addEventListener('click', () => {
-  responseDiv.innerHTML = '<div class="msg-ai">Chat cleared.</div>';
-  chrome.storage.local.remove('chat_history');
-});
-
-// Extras
-notes.addEventListener('input', () => chrome.storage.local.set({ quick_notes: notes.value }));
-chrome.storage.local.get(['quick_notes'], (res) => notes.value = res.quick_notes || '');
-
-document.getElementById('toggle-dark').addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  chrome.storage.sync.set({ dark_mode: document.body.classList.contains('dark') });
-});
-chrome.storage.sync.get(['dark_mode'], (res) => { if (res.dark_mode) document.body.classList.add('dark'); });
-
-// To-Do Logic
-const todoList = document.getElementById('todo-list');
-const todoInput = document.getElementById('todo-input');
-const addTodo = document.getElementById('add-todo');
-function renderTodos(items) {
-  todoList.innerHTML = '';
-  items.forEach((t, i) => {
-    const d = document.createElement('div');
-    d.style.cssText = 'display:flex;justify-content:space-between;background:rgba(0,0,0,0.05);padding:4px;margin-bottom:2px;border-radius:4px;font-size:12px;';
-    d.innerHTML = `<span>${t}</span>`;
-    const b = document.createElement('span');
-    b.textContent = '✕';
-    b.style.cursor='pointer';
-    b.onclick = () => { items.splice(i,1); chrome.storage.local.set({todos:items}); renderTodos(items); };
-    d.appendChild(b);
-    todoList.appendChild(d);
+// --- BOOKMARKS ---
+function renderBookmarks(nodes, container) {
+  nodes.forEach(node => {
+    let title = node.title;
+    if (title === 'Bookmarks bar') return; 
+    if (title === 'Other bookmarks') title = 'Bookmarks'; 
+    if (node.url) {
+      const el = document.createElement('div');
+      el.style.padding="4px"; el.style.fontSize="12px"; el.style.cursor="pointer";
+      el.style.whiteSpace="nowrap"; el.style.overflow="hidden"; el.style.textOverflow="ellipsis";
+      el.textContent = "🔗 " + (title || 'Link');
+      el.onclick = () => chrome.tabs.create({ url: node.url });
+      container.appendChild(el);
+    } else if (node.children) renderBookmarks(node.children, container);
   });
 }
-chrome.storage.local.get(['todos'], (res) => renderTodos(res.todos || []));
-addTodo.onclick = () => {
-  const v = todoInput.value.trim();
-  if(!v)return;
-  chrome.storage.local.get(['todos'], (res) => { const a=res.todos||[]; a.push(v); chrome.storage.local.set({todos:a}); renderTodos(a); });
-  todoInput.value='';
-};
+chrome.bookmarks.getTree((tree) => {
+  bookmarksList.innerHTML = '';
+  if (tree[0] && tree[0].children) renderBookmarks(tree[0].children, bookmarksList);
+});
+
+// --- NOTES & TODO ---
+function renderList(storageKey, listElement, items) {
+  listElement.innerHTML = '';
+  items.forEach((text, i) => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.textContent = text;
+    const del = document.createElement('button');
+    del.className = 'list-del';
+    del.textContent = '✕';
+    del.onclick = () => {
+      items.splice(i, 1);
+      let saveObj = {}; saveObj[storageKey] = items;
+      chrome.storage.local.set(saveObj);
+      renderList(storageKey, listElement, items);
+    };
+    div.appendChild(del);
+    listElement.appendChild(div);
+  });
+}
+chrome.storage.local.get(['multi_notes', 'todos'], (res) => {
+  renderList('multi_notes', notesList, res.multi_notes || []);
+  renderList('todos', todoList, res.todos || []);
+});
+addNoteBtn.addEventListener('click', () => {
+  const t = noteInput.value.trim();
+  if (!t) return;
+  chrome.storage.local.get(['multi_notes'], (res) => {
+    const arr = res.multi_notes || []; arr.push(t);
+    chrome.storage.local.set({ multi_notes: arr });
+    renderList('multi_notes', notesList, arr);
+  });
+  noteInput.value = ''; 
+});
+addTodo.addEventListener('click', () => {
+  const t = todoInput.value.trim();
+  if (!t) return;
+  chrome.storage.local.get(['todos'], (res) => {
+    const arr = res.todos || []; arr.push(t);
+    chrome.storage.local.set({ todos: arr });
+    renderList('todos', todoList, arr);
+  });
+  todoInput.value = '';
+});
+
+// --- LISTEN FOR MESSAGES (The Magic Part) ---
+window.addEventListener("message", (event) => {
+  const data = event.data;
+  if (data.action === "startVoice") micBtn.click();
+  if (data.action === "focusInput") promptInput.focus();
+  // Handle the "Explain" button click
+  if (data.action === "askAI" && data.text) callOllama(data.text);
+  if (data.action === "summarize" && data.text) callOllama("Summarize this webpage content in 3 bullet points:\n\n" + data.text);
+});
+// --- 6. CLOSE SIDEBAR LOGIC ---
+const closeSidebarBtn = document.getElementById('close-sidebar');
+if (closeSidebarBtn) {
+  closeSidebarBtn.addEventListener('click', () => {
+    // Send message to parent window (the website) to close the iframe
+    window.parent.postMessage({ action: "closeSidebar" }, "*");
+  });
+}
