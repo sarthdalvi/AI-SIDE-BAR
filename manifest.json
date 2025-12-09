@@ -38,7 +38,13 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["sidebar.html", "popup.js", "icons/icon48.png"],
+      "resources": [
+        "sidebar.html",
+        "popup.js",
+        "icons/icon48.png",
+        "icons/icon16.png", 
+        "icons/icon128.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
@@ -53,19 +59,27 @@
 
   "commands": {
     "toggle-sidebar": {
-      "suggested_key": { "default": "Alt+X" },
+      "suggested_key": {
+        "default": "Alt+X"
+      },
       "description": "Toggle the AI Sidebar"
     },
     "toggle-voice": {
-      "suggested_key": { "default": "Alt+V" },
+      "suggested_key": {
+        "default": "Alt+V"
+      },
       "description": "Start/Stop Voice Control"
     },
     "focus-ai": {
-      "suggested_key": { "default": "Alt+A" },
+      "suggested_key": {
+        "default": "Alt+A"
+      },
       "description": "Focus the AI chat input"
     },
     "summarize-page": {
-      "suggested_key": { "default": "Alt+S" },
+      "suggested_key": {
+        "default": "Alt+S"
+      },
       "description": "Summarize the current webpage using AI"
     }
   }
