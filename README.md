@@ -9,10 +9,6 @@ This extension is:
 ✔️ Privacy-friendly (local processing)
 ✔️ Works with Ollama, LM Studio, and OpenAI API (optional)
 
-🌟 Demo Preview
-
-(You can add screenshots/GIFs here later for a polished look)
-
 
 ✨ Features
 🧠 Local or Cloud AI Chat
@@ -96,22 +92,33 @@ Manage shortcuts here:
 
 📂 Project Structure
 AI-SIDE-BAR/
-│── icons/
-│── vendor/               # voice / pdf tools
-│── manifest.json
-│── background.js
-│── content.js            # injects floating sidebar
-│── sidebar.html
-│── sidebar.js
-│── popup.html
-│── popup.js
-│── options.html
-│── options.js
-│── newtab.html
-│── newtab.js
-│── StartAI.bat           # Windows launcher for Ollama
-│── LICENSE
-└── README.md
+│
+├── icons/                     # Extension icons
+│
+├── vendor/                    # Voice / PDF / utility tools
+│
+├── manifest.json              # Chrome extension manifest (v3)
+├── background.js              # Service worker
+│
+├── content.js                 # Injects floating sidebar into webpages
+│
+├── sidebar.html               # Sidebar UI
+├── sidebar.js                 # Sidebar logic
+│
+├── popup.html                 # Extension popup UI
+├── popup.js                   # Popup actions
+│
+├── options.html               # Settings page
+├── options.js                 # Settings page logic
+│
+├── newtab.html                # Custom AI-powered new tab
+├── newtab.js                  # New tab logic
+│
+├── StartAI.bat                # Windows launcher for Ollama (optional)
+│
+├── LICENSE                    # MIT License
+└── README.md                  # Full documentation
+
 🛠️ Local AI Setup (Ollama Required)
 
 Since the extension runs 100% locally, install the AI engine first.
