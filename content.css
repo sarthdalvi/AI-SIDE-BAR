@@ -1,4 +1,6 @@
-/* Main Robot Button */
+/* content.css - Styling for the injected elements */
+
+/* 1. Main Robot Button */
 #ai-float-btn {
   position: fixed; 
   right: 20px; 
@@ -22,11 +24,11 @@
 }
 #ai-float-btn:active { cursor: grabbing; transform: scale(0.95); }
 
-/* Sidebar */
+/* 2. Sidebar Iframe (Hidden by default) */
 #ai-sidebar {
   position: fixed; 
   top: 0; 
-  right: -450px; /* Hidden by default */
+  right: -450px; /* Hidden off-screen */
   width: 450px; 
   height: 100vh;
   background: white; 
@@ -37,7 +39,7 @@
 }
 #ai-sidebar.open { right: 0; } /* Slide in */
 
-/* Floating Context Menu */
+/* 3. Context Menu */
 #ai-context-btn {
   display: none; 
   position: absolute; 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Side Bar",
-  "version": "1.5",
+  "version": "1.6",
   "description": "Sidebar-style popup with AI chat, bookmarks, tools, and real-time slide-in sidebar with shortcuts.",
   
   "icons": {
@@ -52,35 +52,16 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "css": ["content.css"], 
       "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
 
   "commands": {
-    "toggle-sidebar": {
-      "suggested_key": {
-        "default": "Alt+X"
-      },
-      "description": "Toggle the AI Sidebar"
-    },
-    "toggle-voice": {
-      "suggested_key": {
-        "default": "Alt+V"
-      },
-      "description": "Start/Stop Voice Control"
-    },
-    "focus-ai": {
-      "suggested_key": {
-        "default": "Alt+A"
-      },
-      "description": "Focus the AI chat input"
-    },
-    "summarize-page": {
-      "suggested_key": {
-        "default": "Alt+S"
-      },
-      "description": "Summarize the current webpage using AI"
-    }
+    "toggle-sidebar": { "suggested_key": { "default": "Alt+X" }, "description": "Toggle the AI Sidebar" },
+    "toggle-voice": { "suggested_key": { "default": "Alt+V" }, "description": "Start/Stop Voice Control" },
+    "focus-ai": { "suggested_key": { "default": "Alt+A" }, "description": "Focus the AI chat input" },
+    "summarize-page": { "suggested_key": { "default": "Alt+S" }, "description": "Summarize the current webpage using AI" }
   }
 }

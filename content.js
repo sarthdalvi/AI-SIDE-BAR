@@ -165,4 +165,4 @@ function initExtension() {
       }
     });
   }
-}z
+}
